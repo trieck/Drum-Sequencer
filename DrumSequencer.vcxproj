@@ -190,6 +190,7 @@
     <None Include="UserImages.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AddSequenceDlg.h" />
     <ClInclude Include="BeatGrid.h" />
     <ClInclude Include="DrumSequencer.h" />
     <ClInclude Include="DrumSequencerDoc.h" />
@@ -217,6 +218,7 @@
     <ClInclude Include="VisualManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AddSequenceDlg.cpp" />
     <ClCompile Include="BeatGrid.cpp" />
     <ClCompile Include="DrumSequencer.cpp" />
     <ClCompile Include="DrumSequencerDoc.cpp" />

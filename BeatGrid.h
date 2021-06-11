@@ -7,31 +7,30 @@ class BeatGrid
 public:
     BeatGrid();
     ~BeatGrid();
+
+    BOOL PointOnGrid(const CPoint& pt) const;
+    CPoint GetSubdivision(const CPoint& pt) const;
+    CSize GetBoundingSize() const;
+    static COLORREF GetInstColor(int i);
+    BOOL Create(CDC* pDC, const Sequence& sequence);
     void Draw(CDC* pDC);
-
-    enum { CX_SUB = 30 };		// width of each subdivision
-    enum { CY_SUB = 20 };		// height of subdivision
-    enum { CX_OFFSET = 80 };	// horz. border
-    enum { CY_OFFSET = 20 };	// vert. border
-
-    enum { CX_GRID = CX_SUB * Sequence::NSUBS };	// width of grid
-    enum { CY_GRID = CY_SUB * Sequence::NINSTRUMENTS };	// height of grid
+    void GetBeatRect(int x, int y, CRect& rc) const;
+    void GetBoundingRect(CRect & rc) const;
+    void GetDimensions(CRect &rc) const;
+        
+    enum { CX_SUB = 30 };       // width of each subdivision
+    enum { CY_SUB = 20 };       // height of subdivision
+    enum { CX_OFFSET = 80 };    // horz. border
+    enum { CY_OFFSET = 20 };    // vert. border
 
 private:
-
-    CPen m_thinPen, m_thickPen;
-    CBrush m_bkgBrush;
-    CRgn m_Region;
-    CDC m_MemDC;
-    CBitmap m_Bitmap;
-
-public:
-    void CreateBitmap();
+    void CreateBitmap(CDC* pDC);
     void PaintBitmap();
-    static void GetBoundingRect(CRect & rc);
-    static void GetDimensions(CRect &rc);
-    static COLORREF GetInstColor(int i);
-    BOOL PointOnGrid(const CPoint &pt);
-    CPoint GetSubdivision(const CPoint& pt);
-    void GetBeatRect(int x, int y, CRect& rc);
+
+    CBitmap m_bitmap;
+    CBrush m_bkgBrush;
+    CDC m_memDC;
+    CPen m_thinPen, m_thickPen;
+    CRgn m_region;
+    int m_cxGrid, m_cyGrid, m_resolution, m_subdivisions;
 };

@@ -26,6 +26,7 @@ BEGIN_MESSAGE_MAP(CDrumSequencerApp, CWinAppEx)
         ON_COMMAND(ID_SEQUENCER_STOP, &CDrumSequencerApp::OnSequencerStop)
         ON_UPDATE_COMMAND_UI(ID_SEQUENCER_PLAY, &CDrumSequencerApp::OnUpdateSequencerPlay)
         ON_UPDATE_COMMAND_UI(ID_SEQUENCER_STOP, &CDrumSequencerApp::OnUpdateSequencerStop)
+        ON_UPDATE_COMMAND_UI(ID_SEQUENCER_ADD_SEQUENCE, &CDrumSequencerApp::OnUpdateAddSequence)
 END_MESSAGE_MAP()
 
 static auto constexpr DEFAULT_TEMPO = 120;
@@ -193,4 +194,9 @@ void CDrumSequencerApp::OnUpdateSequencerPlay(CCmdUI* pCmdUI)
 void CDrumSequencerApp::OnUpdateSequencerStop(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(m_sequencer.IsPlaying());
+}
+
+void CDrumSequencerApp::OnUpdateAddSequence(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(!m_sequencer.IsPlaying());
 }

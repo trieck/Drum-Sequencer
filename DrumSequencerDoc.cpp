@@ -9,10 +9,15 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+#include "AddSequenceDlg.h"
 
 // CDrumSequencerDoc
 
 IMPLEMENT_DYNCREATE(CDrumSequencerDoc, CDocument)
+
+CDrumSequencerDoc::CDrumSequencerDoc()
+{
+}
 
 BOOL CDrumSequencerDoc::OnNewDocument()
 {
@@ -20,8 +25,6 @@ BOOL CDrumSequencerDoc::OnNewDocument()
         return FALSE;
 
     theApp.Stop();
-
-    m_sequence.Clear();
 
     return TRUE;
 }
@@ -52,16 +55,15 @@ void CDrumSequencerDoc::Dump(CDumpContext& dc) const
 
 void CDrumSequencerDoc::ToggleSub(const CPoint& pt)
 {
-    m_sequence.ToggleSub(pt);
+    m_sequence.toggleSub(pt);
     SetModifiedFlag();
     UpdateAllViews(nullptr, MAKELONG(pt.x, pt.y), &m_sequence);
 }
 
 void CDrumSequencerDoc::DeleteContents()
 {
-    m_sequence.Clear();
-
-    UpdateAllViews(nullptr);
+    m_sequence.clear();
+    UpdateAllViews(nullptr, MAKELONG(-1, -1), &m_sequence);
 }
 
 BEGIN_MESSAGE_MAP(CDrumSequencerDoc, CDocument)
@@ -70,6 +72,7 @@ BEGIN_MESSAGE_MAP(CDrumSequencerDoc, CDocument)
         ON_COMMAND(ID_TOGGLE_PLAY, &CDrumSequencerDoc::OnTogglePlay)
         ON_COMMAND(ID_REENCODE_FRONT, &CDrumSequencerDoc::OnReencodeFront)
         ON_COMMAND(ID_REENCODE_BACK, &CDrumSequencerDoc::OnReencodeBack)
+        ON_COMMAND(ID_SEQUENCER_ADD_SEQUENCE, &CDrumSequencerDoc::OnAddSequence)
 END_MESSAGE_MAP()
 
 void CDrumSequencerDoc::OnSequencerPlay()
@@ -99,4 +102,19 @@ void CDrumSequencerDoc::OnReencodeFront()
 void CDrumSequencerDoc::OnReencodeBack()
 {
     theApp.OutBack(m_sequence);
+}
+
+void CDrumSequencerDoc::OnAddSequence()
+{
+    AddSequenceDlg dlg;
+    if (dlg.DoModal() == IDOK) {
+        auto size = dlg.sequenceSize();
+        auto tsTop = dlg.timeSigTop();
+        auto tsBottom = dlg.timeSigBottom();
+        auto resolution = dlg.resolution();
+
+        m_sequence.create(size, tsTop, tsBottom, resolution);
+
+        UpdateAllViews(nullptr, MAKELONG(-1,-1), &m_sequence);
+    }
 }

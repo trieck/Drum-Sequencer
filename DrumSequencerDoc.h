@@ -5,7 +5,7 @@
 class CDrumSequencerDoc : public CDocument
 {
 protected: // create from serialization only
-    CDrumSequencerDoc() = default;
+    CDrumSequencerDoc();
 DECLARE_DYNCREATE(CDrumSequencerDoc)
     BOOL OnNewDocument() override;
     void Serialize(CArchive& ar) override;
@@ -15,9 +15,9 @@ DECLARE_DYNCREATE(CDrumSequencerDoc)
     void AssertValid() const override;
     void Dump(CDumpContext& dc) const override;
 #endif
-    Sequence* GetSequence()
+    const Sequence& GetSequence() const
     {
-        return &m_sequence;
+        return m_sequence;
     }
 
     void ToggleSub(const CPoint& pt);
@@ -32,4 +32,5 @@ DECLARE_MESSAGE_MAP()
     afx_msg void OnTogglePlay();
     afx_msg void OnReencodeFront();
     afx_msg void OnReencodeBack();
+    afx_msg void OnAddSequence();
 };

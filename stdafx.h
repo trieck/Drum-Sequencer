@@ -42,6 +42,7 @@
 #endif
 
 #include <mmeapi.h>
+#include <vector>
 
 #define ANON_BEGIN  namespace {
 #define ANON_END    }

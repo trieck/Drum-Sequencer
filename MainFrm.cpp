@@ -79,7 +79,7 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
     if (!CFrameWndEx::PreCreateWindow(cs))
         return FALSE;
 
-    cs.style &= ~(WS_THICKFRAME | WS_MAXIMIZE | WS_MAXIMIZEBOX);
+    cs.style |= WS_THICKFRAME | WS_MAXIMIZE | WS_MAXIMIZEBOX;
 
     return TRUE;
 }
@@ -127,69 +127,69 @@ void CMainFrame::RecalcLayout(BOOL bNotify)
 
 void CMainFrame::ResizeFrame()
 {
-    RepositionBars(0, 0xffff, AFX_IDW_PANE_FIRST);
+    //RepositionBars(0, 0xffff, AFX_IDW_PANE_FIRST);
 
-    CRect rc;
-    BeatGrid::GetBoundingRect(rc);
+    //CRect rc;
+    //GetClientRect(rc);
 
-    // make room for the menu bar
-    CRect rcMenu;
-    if (IsWindow(m_wndMenuBar)) {
-        m_wndMenuBar.GetWindowRect(rcMenu);
-    }
+    //// make room for the menu bar
+    //CRect rcMenu;
+    //if (IsWindow(m_wndMenuBar)) {
+    //    m_wndMenuBar.GetWindowRect(rcMenu);
+    //}
 
-    // make room for the toolbar
-    CRect rcToolbar;
-    if (IsWindow(m_wndToolBar)) {
-        m_wndToolBar.GetWindowRect(rcToolbar);
-    }
+    //// make room for the toolbar
+    //CRect rcToolbar;
+    //if (IsWindow(m_wndToolBar)) {
+    //    m_wndToolBar.GetWindowRect(rcToolbar);
+    //}
 
-    // make room for the settings pane
-    CRect rcPane;
-    if (IsWindow(m_wndSettingsPane)) {
-        m_wndSettingsPane.GetWindowRect(rcPane);
-    }
+    //// make room for the settings pane
+    //CRect rcPane;
+    //if (IsWindow(m_wndSettingsPane)) {
+    //    m_wndSettingsPane.GetWindowRect(rcPane);
+    //}
 
-    // make room for the status bar
-    CRect rcStatus;
-    if (IsWindow(m_wndStatusBar)) {
-        m_wndStatusBar.GetWindowRect(rcStatus);
-    }
+    //// make room for the status bar
+    //CRect rcStatus;
+    //if (IsWindow(m_wndStatusBar)) {
+    //    m_wndStatusBar.GetWindowRect(rcStatus);
+    //}
 
-    if (IsWindow(m_wndMenuBar) && !m_wndMenuBar.IsFloating()
-        && m_wndMenuBar.IsWindowVisible()) {
-        if (m_wndMenuBar.GetPaneStyle() & CBRS_ORIENT_HORZ)
-            rc.bottom += rcMenu.Height();
-        else if (m_wndMenuBar.GetPaneStyle() & CBRS_ORIENT_VERT)
-            rc.right += rcMenu.Width();
-    }
+    //if (IsWindow(m_wndMenuBar) && !m_wndMenuBar.IsFloating()
+    //    && m_wndMenuBar.IsWindowVisible()) {
+    //    if (m_wndMenuBar.GetPaneStyle() & CBRS_ORIENT_HORZ)
+    //        rc.bottom += rcMenu.Height();
+    //    else if (m_wndMenuBar.GetPaneStyle() & CBRS_ORIENT_VERT)
+    //        rc.right += rcMenu.Width();
+    //}
 
-    if (IsWindow(m_wndToolBar) && !m_wndToolBar.IsFloating() &&
-        m_wndToolBar.IsWindowVisible()) {
-        if (m_wndToolBar.GetPaneStyle() & CBRS_ORIENT_HORZ)
-            rc.bottom += rcToolbar.Height();
-        else if (m_wndToolBar.GetPaneStyle() & CBRS_ORIENT_VERT)
-            rc.right += rcToolbar.Width();
-    }
+    //if (IsWindow(m_wndToolBar) && !m_wndToolBar.IsFloating() &&
+    //    m_wndToolBar.IsWindowVisible()) {
+    //    if (m_wndToolBar.GetPaneStyle() & CBRS_ORIENT_HORZ)
+    //        rc.bottom += rcToolbar.Height();
+    //    else if (m_wndToolBar.GetPaneStyle() & CBRS_ORIENT_VERT)
+    //        rc.right += rcToolbar.Width();
+    //}
 
-    if (IsWindow(m_wndSettingsPane) && !m_wndSettingsPane.IsFloating()
-        && m_wndSettingsPane.IsWindowVisible()) {
-        if (m_wndSettingsPane.GetPaneStyle() & CBRS_ORIENT_HORZ)
-            rc.bottom += rcPane.Height();
-        else if (m_wndSettingsPane.GetPaneStyle() & CBRS_ORIENT_VERT)
-            rc.right += rcPane.Width();
-    }
+    //if (IsWindow(m_wndSettingsPane) && !m_wndSettingsPane.IsFloating()
+    //    && m_wndSettingsPane.IsWindowVisible()) {
+    //    if (m_wndSettingsPane.GetPaneStyle() & CBRS_ORIENT_HORZ)
+    //        rc.bottom += rcPane.Height();
+    //    else if (m_wndSettingsPane.GetPaneStyle() & CBRS_ORIENT_VERT)
+    //        rc.right += rcPane.Width();
+    //}
 
-    if (IsWindow(m_wndStatusBar) && !m_wndStatusBar.IsWindowVisible()) {
-        rc.bottom -= rcStatus.Height();
-    }
+    //if (IsWindow(m_wndStatusBar) && !m_wndStatusBar.IsWindowVisible()) {
+    //    rc.bottom -= rcStatus.Height();
+    //}
 
-    auto style = GetStyle();
-    auto dwExStyle = GetExStyle() | WS_EX_CLIENTEDGE;
-    AdjustWindowRectEx(&rc, style, TRUE, dwExStyle);
+    //auto style = GetStyle();
+    //auto dwExStyle = GetExStyle() | WS_EX_CLIENTEDGE;
+    //AdjustWindowRectEx(&rc, style, TRUE, dwExStyle);
 
-    SetWindowPos(nullptr, 0, 0, rc.Width(), rc.Height(),
-                 SWP_NOMOVE | SWP_FRAMECHANGED | SWP_NOZORDER);
+    //SetWindowPos(nullptr, 0, 0, rc.Width(), rc.Height(),
+    //             SWP_NOMOVE | SWP_FRAMECHANGED | SWP_NOZORDER);
 }
 
 void CMainFrame::AdjustClientArea()

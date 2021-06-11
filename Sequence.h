@@ -1,23 +1,28 @@
 #pragma once
+
+#include "miditime.h"
+
 class Sequence : public CObject
 {
 public:
     Sequence();
     ~Sequence() = default;
-    void ToggleSub(const CPoint& pt);
 
-    bool GetBeat(int sub, int instrument) const;
-    void Clear();
-    BYTE GetInstrument(int i) const;
-
+    bool beat(int sub, int instrument) const;
+    Duration delta() const;
+    int bars() const;
+    int instrument(int i) const;
+    int resolution() const;
+    int subdivisions() const;
+    std::pair<int, int> timeSig() const;
+    void clear();
+    void create(int nbars, int tsTop, int tsBottom, int resolution);
+    void toggleSub(const CPoint& pt);
     enum { NINSTRUMENTS = 10 }; // number of instruments
-    enum { NBARS = 1 }; // number of bars
-    enum { RESOLUTION = 4 }; // number of subdivisions per beat
-    enum { BEATS_PER_BAR = 4 }; // number of beats per bar
-    enum { NSUBS = RESOLUTION * BEATS_PER_BAR * NBARS }; // number of subdivisions
-
+   
 private:
-    bool m_beats[NSUBS][NINSTRUMENTS]{};
+    int m_bars, m_tsTop, m_tsBottom, m_resolution;
+    std::vector<bool> m_beats;
 
 DECLARE_SERIAL(Sequence)
     void Serialize(CArchive& ar) override;

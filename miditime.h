@@ -10,7 +10,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // Duration enumeration
-enum Duration {
+enum class Duration {
     EmptyNote = 0,
     WholeNote = 1,
     HalfNote = 2,

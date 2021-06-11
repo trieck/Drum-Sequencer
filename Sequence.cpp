@@ -28,27 +28,56 @@ constexpr BYTE INSTRUMENTS[Sequence::NINSTRUMENTS] = {
 
 ANON_END
 
-Sequence::Sequence()
+Sequence::Sequence() : m_bars(0), m_tsTop(0), m_tsBottom(0), m_resolution(0)
 {
-    Clear();
 }
 
-void Sequence::ToggleSub(const CPoint& pt)
+void Sequence::toggleSub(const CPoint& pt)
 {
-    const auto x = pt.x % NSUBS;
+    ASSERT(!m_beats.empty());
+
+    const auto x = pt.x % subdivisions();
     const auto y = pt.y % NINSTRUMENTS;
-    m_beats[x][y] = !m_beats[x][y];
+
+    auto index = y * subdivisions() + x;
+
+    m_beats[index] = !m_beats[index];
 }
 
-bool Sequence::GetBeat(int sub, int instrument) const
+void Sequence::create(int nbars, int tsTop, int tsBottom, int resolution)
 {
-    sub = sub % NSUBS;
+    m_bars = nbars;
+    m_tsTop = tsTop;
+    m_tsBottom = tsBottom;
+    m_resolution = resolution;
+
+    auto size = NINSTRUMENTS * subdivisions();
+
+    m_beats.clear();
+    m_beats.resize(size);
+}
+
+bool Sequence::beat(int sub, int instrument) const
+{
+    sub = sub % subdivisions();
     instrument = instrument % NINSTRUMENTS;
 
-    return m_beats[sub][instrument];
+    auto index = instrument * subdivisions() + sub;
+
+    return m_beats[index];
 }
 
-BYTE Sequence::GetInstrument(int i) const
+Duration Sequence::delta() const
+{
+    return static_cast<Duration>(resolution());
+}
+
+int Sequence::bars() const
+{
+    return m_bars;
+}
+
+int Sequence::instrument(int i) const
 {
     if (i < 0 || i >= NINSTRUMENTS)
         return 0;
@@ -56,13 +85,35 @@ BYTE Sequence::GetInstrument(int i) const
     return INSTRUMENTS[i];
 }
 
-void Sequence::Clear()
+int Sequence::resolution() const
 {
-    memset(&m_beats, 0, sizeof(m_beats));
+    return m_resolution;
+}
+
+int Sequence::subdivisions() const
+{
+    if (m_tsBottom == 0) {
+        return 0;
+    }
+    return m_bars * m_tsTop * (m_resolution / m_tsBottom);
+}
+
+std::pair<int, int> Sequence::timeSig() const
+{
+    return { m_tsTop, m_tsBottom };
+}
+
+void Sequence::clear()
+{
+    m_bars = m_tsTop = m_tsBottom = m_resolution = 0;
+    m_beats.clear();
 }
 
 void Sequence::Serialize(CArchive& ar)
 {
+    // FIXME
+    AfxThrowNotSupportedException();
+
     BYTE buffer[3];
 
     if (ar.IsStoring()) {
@@ -71,7 +122,6 @@ void Sequence::Serialize(CArchive& ar)
         ar << SEQ_MARKER[2]; // 'Q'
 
         ar.Write(&m_beats, sizeof(m_beats));
-
     } else {
         // Is this a valid sequence archive
         ar.Read(buffer, 3);

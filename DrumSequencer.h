@@ -46,6 +46,7 @@ public:
     afx_msg void OnSequencerStop();
     afx_msg void OnUpdateSequencerPlay(CCmdUI* pCmdUI);
     afx_msg void OnUpdateSequencerStop(CCmdUI* pCmdUI);
+    afx_msg void OnUpdateAddSequence(CCmdUI* pCmdUI);
 };
 
 extern CDrumSequencerApp theApp;

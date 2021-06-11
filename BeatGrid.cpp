@@ -4,7 +4,7 @@
 constexpr auto COLOR_GRID = RGB(0xc0, 0xc0, 0xc0);
 constexpr auto COLOR_BKGND = RGB(0xEE, 0xEE, 0xFF);
 
-const COLORREF INST_COLORS[Sequence::NINSTRUMENTS] = {
+constexpr COLORREF INST_COLORS[Sequence::NINSTRUMENTS] = {
     RGB(192, 0, 0),
     RGB(255, 0, 0),
     RGB(255, 192, 0),
@@ -17,52 +17,77 @@ const COLORREF INST_COLORS[Sequence::NINSTRUMENTS] = {
     RGB(112, 48, 160)
 };
 
-BeatGrid::BeatGrid()
+BeatGrid::BeatGrid() : m_cxGrid(0), m_cyGrid(0), m_resolution(0), m_subdivisions(0)
 {
     m_bkgBrush.CreateSolidBrush(COLOR_BKGND);
     m_thinPen.CreatePen(PS_SOLID, 0, COLOR_GRID);
     m_thickPen.CreatePen(PS_SOLID, 2, COLOR_GRID);
-
-    CreateBitmap();
 }
 
 BeatGrid::~BeatGrid()
 {
 }
 
-void BeatGrid::Draw(CDC* pDC)
+BOOL BeatGrid::Create(CDC* pDC, const Sequence& sequence)
 {
-    CRect rc;
-    pDC->GetClipBox(rc);
+    ASSERT_VALID(pDC);
 
-    auto* pOldBitmap = m_MemDC.SelectObject(&m_Bitmap);
+    if (m_resolution == sequence.resolution() &&
+        m_subdivisions == sequence.subdivisions()) {
+        return FALSE;   // nothing to re-create
+    }
 
-    CRect aRect(rc);
-    aRect.OffsetRect(-CX_OFFSET, -CY_OFFSET);
+    m_resolution = sequence.resolution();
+    m_subdivisions = sequence.subdivisions();
+            
+    m_cxGrid = CX_SUB * m_subdivisions;     // width of grid
+    m_cyGrid = m_subdivisions == 0 ? 0 :
+        CY_SUB * Sequence::NINSTRUMENTS;    // height of grid
 
-    pDC->BitBlt(rc.left, rc.top, rc.Width(), rc.Height(), &m_MemDC,
-                aRect.left, aRect.top, SRCCOPY);
+    m_region.DeleteObject();
+    m_memDC.DeleteDC();
+    m_bitmap.DeleteObject();
 
-    m_MemDC.SelectObject(pOldBitmap);
+    if (m_subdivisions > 0) {
+        CreateBitmap(pDC);
+    }
+
+    return TRUE;
 }
 
-void BeatGrid::CreateBitmap()
+void BeatGrid::Draw(CDC* pDC)
+{
+    if (m_subdivisions > 0) {
+        CRect rc;
+        pDC->GetClipBox(rc);
+
+        auto* pOldBitmap = m_memDC.SelectObject(&m_bitmap);
+
+        CRect aRect(rc);
+        aRect.OffsetRect(-CX_OFFSET, -CY_OFFSET);
+
+        pDC->BitBlt(rc.left, rc.top, rc.Width(), rc.Height(), &m_memDC,
+            aRect.left, aRect.top, SRCCOPY);
+
+        m_memDC.SelectObject(pOldBitmap);
+    }
+}
+
+void BeatGrid::CreateBitmap(CDC* pDC)
 {
     CRect rcRegion;
-    rcRegion.right = rcRegion.left + CX_GRID;
-    rcRegion.bottom = rcRegion.top + CY_GRID;
+    rcRegion.right = rcRegion.left + m_cxGrid;
+    rcRegion.bottom = rcRegion.top + m_cyGrid;
 
-    if (!m_Region.CreateRectRgnIndirect(&rcRegion))
+    if (!m_region.CreateRectRgnIndirect(&rcRegion))
         AfxThrowResourceException();
 
-    CDC dc;
-    dc.Attach(GetDC(nullptr));
-    if (!m_MemDC.CreateCompatibleDC(&dc))
+    if (!m_memDC.CreateCompatibleDC(pDC))
         AfxThrowResourceException();
 
-    m_MemDC.SetMapMode(dc.GetMapMode());
+    m_memDC.SetMapMode(pDC->GetMapMode());
 
-    if (!m_Bitmap.CreateCompatibleBitmap(&dc, rcRegion.Width(),
+    if (!m_bitmap.CreateCompatibleBitmap(pDC, rcRegion.Width(),
                                          rcRegion.Height())) {
         AfxThrowResourceException();
     }
@@ -73,65 +98,65 @@ void BeatGrid::CreateBitmap()
 void BeatGrid::PaintBitmap()
 {
     CRect rcBoard;
-    m_Region.GetRgnBox(rcBoard);
+    m_region.GetRgnBox(rcBoard);
 
-    auto* pOldBitmap = m_MemDC.SelectObject(&m_Bitmap);
+    auto* pOldBitmap = m_memDC.SelectObject(&m_bitmap);
 
-    auto pOldBrush = static_cast<CBrush*>(m_MemDC.SelectObject(&m_bkgBrush));
-    auto pOldPen = static_cast<CPen*>(m_MemDC.SelectObject(&m_thinPen));
+    auto pOldBrush = static_cast<CBrush*>(m_memDC.SelectObject(&m_bkgBrush));
+    auto pOldPen = static_cast<CPen*>(m_memDC.SelectObject(&m_thinPen));
 
-    m_MemDC.Rectangle(rcBoard);
+    m_memDC.Rectangle(rcBoard);
 
-    auto cx = rcBoard.Width() / Sequence::NSUBS;
+    auto cx = rcBoard.Width() / m_subdivisions;
     auto cy = rcBoard.Height() / Sequence::NINSTRUMENTS;
 
     CPoint ptStart(rcBoard.left + cx, rcBoard.top);
-    m_MemDC.MoveTo(ptStart);
+    m_memDC.MoveTo(ptStart);
 
     // Draw vertical lines
     for (auto i = 1; ptStart.x < rcBoard.right; ++i) {
-        if (i % Sequence::RESOLUTION == 0) {
-            m_MemDC.SelectObject(&m_thickPen);
+        if (i % m_resolution == 0) {
+            m_memDC.SelectObject(&m_thickPen);
         } else {
-            m_MemDC.SelectObject(&m_thinPen);
+            m_memDC.SelectObject(&m_thinPen);
         }
         auto ptEnd = CPoint(ptStart.x, rcBoard.bottom - 1);
-        m_MemDC.LineTo(ptEnd);
-        m_MemDC.MoveTo(ptStart.x += cx, ptStart.y);
+        m_memDC.LineTo(ptEnd);
+        m_memDC.MoveTo(ptStart.x += cx, ptStart.y);
     }
 
-    m_MemDC.SelectObject(&m_thinPen);
+    m_memDC.SelectObject(&m_thinPen);
 
     // Draw horizontal lines
     ptStart = CPoint(rcBoard.left, rcBoard.top + cy);
-    m_MemDC.MoveTo(ptStart);
+    m_memDC.MoveTo(ptStart);
 
     while (ptStart.y < rcBoard.bottom) {
         auto ptEnd = CPoint(rcBoard.right - 1, ptStart.y);
-        m_MemDC.LineTo(ptEnd);
-        m_MemDC.MoveTo(ptStart.x, ptStart.y += cy);
+        m_memDC.LineTo(ptEnd);
+        m_memDC.MoveTo(ptStart.x, ptStart.y += cy);
     }
 
-    m_MemDC.SelectObject(pOldBrush);
-    m_MemDC.SelectObject(pOldPen);
-    m_MemDC.SelectObject(pOldBitmap);
+    m_memDC.SelectObject(pOldBrush);
+    m_memDC.SelectObject(pOldPen);
+    m_memDC.SelectObject(pOldBitmap);
 }
 
-void BeatGrid::GetDimensions(CRect& rc)
+void BeatGrid::GetDimensions(CRect& rc) const
 {
     rc.SetRectEmpty();
-    rc.right = CX_GRID;
-    rc.bottom = CY_GRID;
+    rc.right = m_cxGrid;
+    rc.bottom = m_cyGrid;
 }
 
-void BeatGrid::GetBoundingRect(CRect& rc)
+void BeatGrid::GetBoundingRect(CRect& rc) const
 {
     GetDimensions(rc);
     rc.right += 2 * CX_OFFSET;
     rc.bottom += 2 * CY_OFFSET;
 }
 
-BOOL BeatGrid::PointOnGrid(const CPoint& pt)
+BOOL BeatGrid::PointOnGrid(const CPoint& pt) const
 {
     CRect rc;
     GetDimensions(rc);
@@ -139,30 +164,41 @@ BOOL BeatGrid::PointOnGrid(const CPoint& pt)
     return rc.PtInRect(pt);
 }
 
-CPoint BeatGrid::GetSubdivision(const CPoint& pt)
+CPoint BeatGrid::GetSubdivision(const CPoint& pt) const
 {
-    CPoint sub;
+    if (m_subdivisions == 0) {
+        return { -1, -1 };
+    }
 
     auto aPoint(pt);
     aPoint.x -= CX_OFFSET;
     aPoint.y -= CY_OFFSET;
 
-    sub.x = min(max(0, (aPoint.x / CX_SUB)), Sequence::NSUBS-1);
+    CPoint sub;
+    sub.x = min(max(0, (aPoint.x / CX_SUB)), m_subdivisions-1);
     sub.y = min(max(0, (aPoint.y / CY_SUB)), Sequence::NINSTRUMENTS-1);
 
     return sub;
 }
 
-void BeatGrid::GetBeatRect(int x, int y, CRect& rc)
+CSize BeatGrid::GetBoundingSize() const
 {
-    x = x % Sequence::NSUBS;
-    y = y % Sequence::NINSTRUMENTS;
+    return { m_cxGrid + 2 * CX_OFFSET, m_cyGrid + 2 * CY_OFFSET };
+}
 
+void BeatGrid::GetBeatRect(int x, int y, CRect& rc) const
+{
     rc.SetRectEmpty();
-    rc.left = CX_OFFSET + x * CX_SUB;
-    rc.top = CY_OFFSET + y * CY_SUB;
-    rc.right = rc.left + CX_SUB;
-    rc.bottom = rc.top + CY_SUB;
+
+    if (m_subdivisions > 0) {
+        x = x % m_subdivisions;
+        y = y % Sequence::NINSTRUMENTS;
+
+        rc.left = CX_OFFSET + x * CX_SUB;
+        rc.top = CY_OFFSET + y * CY_SUB;
+        rc.right = rc.left + CX_SUB;
+        rc.bottom = rc.top + CY_SUB;
+    }
 }
 
 COLORREF BeatGrid::GetInstColor(int i)

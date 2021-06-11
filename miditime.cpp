@@ -36,11 +36,11 @@ DWORD MidiTime::MicrosecondsToBPM(DWORD microseconds)
 /////////////////////////////////////////////////////////////////////////////
 DWORD MidiTime::DurationToTicks(Duration duration)
 {
-    if (duration == EmptyNote) {
+    if (duration == Duration::EmptyNote) {
         return 0;
     }
 
-    auto result = (DEFAULT_PPQN * 4) / duration;
+    auto result = (DEFAULT_PPQN * 4) / (int)duration;
 
     return result;
 }

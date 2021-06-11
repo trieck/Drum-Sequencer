@@ -8,7 +8,7 @@
 ANON_BEGIN
     void noteOn(PMIDISHORTEVENT* stream, BYTE data, BYTE velocity, Duration delta);
     void noteOff(PMIDISHORTEVENT* stream, BYTE data, Duration delta);
-ANON_END
+    ANON_END
 
 MidiBuffer::~MidiBuffer()
 {
@@ -48,7 +48,7 @@ MidiBuffer& MidiBuffer::operator=(MidiBuffer&& rhs) noexcept
 void MidiBuffer::Encode(const Sequence& seq)
 {
     // Determine the size of the buffer needed
-    const auto size = (Sequence::NINSTRUMENTS * Sequence::NSUBS) /* notes */
+    const auto size = (Sequence::NINSTRUMENTS * seq.subdivisions()) /* notes */
         * sizeof(MIDISHORTEVENT);
 
     if (size > m_header.dwBufferLength) {
@@ -59,15 +59,15 @@ void MidiBuffer::Encode(const Sequence& seq)
 
     m_header.dwBytesRecorded = 0;
 
-    for (auto i = 0; i < Sequence::NSUBS; i++) {
-        auto delta = SixteenthNote;
+    for (auto i = 0; i < seq.subdivisions(); i++) {
+        auto delta = seq.delta();
         for (auto j = 0; j < Sequence::NINSTRUMENTS; j++) {
-            const auto instrument = seq.GetInstrument(j);
+            const auto instrument = seq.instrument(j);
 
-            if (j > 0 && delta != EmptyNote) {
-                delta = EmptyNote;
+            if (j > 0 && delta != Duration::EmptyNote) {
+                delta = Duration::EmptyNote;
             }
-            if (seq.GetBeat(i, j)) {
+            if (seq.beat(i, j)) {
                 noteOn(&pdata, instrument, 127, delta);
             } else {
                 noteOff(&pdata, instrument, delta);

@@ -2,7 +2,7 @@
 
 #include "BeatGrid.h"
 
-class CDrumSequencerView : public CView
+class CDrumSequencerView : public CScrollView
 {
 protected: // create from serialization only
     CDrumSequencerView() = default;
@@ -24,14 +24,15 @@ private:
     CFont m_font;
     CPoint m_activeSub{-1, -1};
 public:
-    afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+    afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+    afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+    void OnInitialUpdate() override;
+    void DrawBeats(CDC* pDC, const Sequence& seq);
     void DrawInstruments(CDC* pDC);
     void OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/) override;
-    void DrawBeats(CDC* pDC, Sequence* pSeq);
-    afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-    afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 };
 
 #ifndef _DEBUG  // debug version in DrumSequencerView.cpp

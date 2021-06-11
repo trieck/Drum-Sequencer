@@ -11,9 +11,9 @@
 
 // CDrumSequencerView
 
-IMPLEMENT_DYNCREATE(CDrumSequencerView, CView)
+IMPLEMENT_DYNCREATE(CDrumSequencerView, CScrollView)
 
-BEGIN_MESSAGE_MAP(CDrumSequencerView, CView)
+BEGIN_MESSAGE_MAP(CDrumSequencerView, CScrollView)
         ON_WM_LBUTTONDOWN()
         ON_WM_ERASEBKGND()
         ON_WM_CREATE()
@@ -40,7 +40,7 @@ const LPCTSTR Instruments[] = {
 
 BOOL CDrumSequencerView::PreCreateWindow(CREATESTRUCT& cs)
 {
-    return CView::PreCreateWindow(cs);
+    return CScrollView::PreCreateWindow(cs);
 }
 
 // CDrumSequencerView drawing
@@ -52,10 +52,13 @@ void CDrumSequencerView::OnDraw(CDC* pDC)
     if (!pDoc)
         return;
 
-    DrawInstruments(pDC);
-    m_grid.Draw(pDC);
+    const auto& sequence = pDoc->GetSequence();
+    if (sequence.subdivisions() > 0) {
+        DrawInstruments(pDC);
+        m_grid.Draw(pDC);
 
-    DrawBeats(pDC, pDoc->GetSequence());
+        DrawBeats(pDC, pDoc->GetSequence());
+    }
 }
 
 // CDrumSequencerView printing
@@ -86,7 +89,7 @@ BOOL CDrumSequencerView::OnEraseBkgnd(CDC* pDC)
 
 int CDrumSequencerView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-    if (CView::OnCreate(lpCreateStruct) == -1)
+    if (CScrollView::OnCreate(lpCreateStruct) == -1)
         return -1;
 
     if (!m_bkgndBrush.CreateSolidBrush(BKGND_COLOR))
@@ -124,28 +127,39 @@ void CDrumSequencerView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     if (pHint != nullptr) {
         auto* pSeq = dynamic_cast<Sequence*>(pHint);
         ASSERT_VALID(pSeq);
-        const int x = LOWORD(lHint);
-        const int y = HIWORD(lHint);
-        CRect rc;
-        m_grid.GetBeatRect(x, y, rc);
-        InvalidateRect(rc);
+
+        short x = LOWORD(lHint), y = HIWORD(lHint);
+
+        CClientDC dc(this);
+        if (m_grid.Create(&dc, *pSeq)) {    // new grid
+            SetScrollSizes(MM_TEXT, m_grid.GetBoundingSize());
+            Invalidate();
+        } else if (x >= 0 && y >= 0) {
+            CRect rc;
+            m_grid.GetBeatRect(x, y, rc);
+            InvalidateRect(rc);
+        } else {
+            Invalidate();
+        }
     } else {
-        CView::OnUpdate(pSender, lHint, pHint);
+        CScrollView::OnUpdate(pSender, lHint, pHint);
     }
 }
 
-void CDrumSequencerView::DrawBeats(CDC* pDC, Sequence* pSeq)
+void CDrumSequencerView::DrawBeats(CDC* pDC, const Sequence& seq)
 {
     CRect rc;
 
+    auto resolution = seq.resolution();
+
     for (auto i = 0; i < Sequence::NINSTRUMENTS; i++) {
         const auto color = BeatGrid::GetInstColor(i);
-        for (auto j = 0; j < Sequence::NSUBS; j++) {
-            if (pSeq->GetBeat(j, i)) {
+        for (auto j = 0; j < seq.subdivisions(); j++) {
+            if (seq.beat(j, i)) {
                 m_grid.GetBeatRect(j, i, rc);
                 rc.DeflateRect(1, 1, 0, 0);
 
-                if (j % Sequence::RESOLUTION == Sequence::RESOLUTION - 1) {
+                if (j % resolution == resolution - 1) {
                     rc.right -= 1; // thick pen
                 }
                 if (i == Sequence::NINSTRUMENTS - 1) {
@@ -156,7 +170,6 @@ void CDrumSequencerView::DrawBeats(CDC* pDC, Sequence* pSeq)
         }
     }
 }
-
 
 void CDrumSequencerView::OnLButtonDown(UINT nFlags, CPoint point)
 {
@@ -170,13 +183,13 @@ void CDrumSequencerView::OnLButtonDown(UINT nFlags, CPoint point)
         }
     }
 
-    CView::OnLButtonDown(nFlags, point);
+    CScrollView::OnLButtonDown(nFlags, point);
 }
 
 void CDrumSequencerView::OnLButtonUp(UINT nFlags, CPoint point)
 {
     m_activeSub = {-1, -1};
-    CView::OnLButtonUp(nFlags, point);
+    CScrollView::OnLButtonUp(nFlags, point);
 }
 
 void CDrumSequencerView::OnMouseMove(UINT nFlags, CPoint point)
@@ -185,5 +198,12 @@ void CDrumSequencerView::OnMouseMove(UINT nFlags, CPoint point)
         OnLButtonDown(nFlags, point);
     }
 
-    CView::OnMouseMove(nFlags, point);
+    CScrollView::OnMouseMove(nFlags, point);
+}
+
+void CDrumSequencerView::OnInitialUpdate()
+{
+    CScrollView::OnInitialUpdate();
+
+    SetScrollSizes(MM_TEXT, m_grid.GetBoundingSize());
 }
