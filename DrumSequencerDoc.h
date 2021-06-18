@@ -29,6 +29,7 @@ public:
 DECLARE_MESSAGE_MAP()
     afx_msg void OnSequencerPlay();
     afx_msg void OnUpdateFileSave(CCmdUI* pCmdUI);
+    afx_msg void OnUpdateSequence(CCmdUI* pCmdUI);
     afx_msg void OnTogglePlay();
     afx_msg void OnReencodeFront();
     afx_msg void OnReencodeBack();

@@ -2,6 +2,7 @@
 #include "BeatGrid.h"
 
 constexpr auto COLOR_GRID = RGB(0xc0, 0xc0, 0xc0);
+constexpr auto COLOR_BAR = RGB(0x80, 0x80, 0x80);
 constexpr auto COLOR_BKGND = RGB(0xEE, 0xEE, 0xFF);
 
 constexpr COLORREF INST_COLORS[Sequence::NINSTRUMENTS] = {
@@ -21,7 +22,7 @@ BeatGrid::BeatGrid() : m_cxGrid(0), m_cyGrid(0), m_resolution(0), m_subdivisions
 {
     m_bkgBrush.CreateSolidBrush(COLOR_BKGND);
     m_thinPen.CreatePen(PS_SOLID, 0, COLOR_GRID);
-    m_thickPen.CreatePen(PS_SOLID, 2, COLOR_GRID);
+    m_thickPen.CreatePen(PS_SOLID, 2, COLOR_BAR);
 }
 
 BeatGrid::~BeatGrid()
@@ -37,6 +38,7 @@ BOOL BeatGrid::Create(CDC* pDC, const Sequence& sequence)
         return FALSE;   // nothing to re-create
     }
 
+    m_ts = sequence.timeSig();
     m_resolution = sequence.resolution();
     m_subdivisions = sequence.subdivisions();
             
@@ -113,15 +115,18 @@ void BeatGrid::PaintBitmap()
     CPoint ptStart(rcBoard.left + cx, rcBoard.top);
     m_memDC.MoveTo(ptStart);
 
+    auto step = m_resolution / m_ts.second;
+    auto bar = step * m_ts.first;
+
     // Draw vertical lines
     for (auto i = 1; ptStart.x < rcBoard.right; ++i) {
-        if (i % m_resolution == 0) {
+        if (i % bar == 0) {
             m_memDC.SelectObject(&m_thickPen);
         } else {
             m_memDC.SelectObject(&m_thinPen);
         }
         auto ptEnd = CPoint(ptStart.x, rcBoard.bottom - 1);
-        m_memDC.LineTo(ptEnd);
+        m_memDC.LineTo(std::move(ptEnd));
         m_memDC.MoveTo(ptStart.x += cx, ptStart.y);
     }
 
@@ -133,7 +138,7 @@ void BeatGrid::PaintBitmap()
 
     while (ptStart.y < rcBoard.bottom) {
         auto ptEnd = CPoint(rcBoard.right - 1, ptStart.y);
-        m_memDC.LineTo(ptEnd);
+        m_memDC.LineTo(std::move(ptEnd));
         m_memDC.MoveTo(ptStart.x, ptStart.y += cy);
     }
 

@@ -11,22 +11,16 @@
 #define new DEBUG_NEW
 #endif
 
-// CMainFrame
-
 IMPLEMENT_DYNCREATE(CMainFrame, CFrameWndEx)
-
-const int iMaxUserToolbars = 10;
-const UINT uiFirstUserToolBarId = AFX_IDW_CONTROLBAR_FIRST + 40;
-const UINT uiLastUserToolBarId = uiFirstUserToolBarId + iMaxUserToolbars - 1;
 
 BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
         ON_WM_CREATE()
-        ON_REGISTERED_MESSAGE(AFX_WM_CREATETOOLBAR, &CMainFrame::OnToolbarCreateNew)
         ON_WM_CHAR()
 END_MESSAGE_MAP()
 
 static UINT indicators[] = {
     ID_SEPARATOR, // status line indicator
+    IDS_SEQUENCE
 };
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -71,6 +65,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     DockPane(&m_wndToolBar);
     DockPane(&m_wndSettingsPane);
 
+    EnableLoadDockState(FALSE);
+
     return 0;
 }
 
@@ -98,108 +94,3 @@ void CMainFrame::Dump(CDumpContext& dc) const
 }
 #endif //_DEBUG
 
-
-// CMainFrame message handlers
-
-LRESULT CMainFrame::OnToolbarCreateNew(WPARAM wp, LPARAM lp)
-{
-    auto lres = CFrameWndEx::OnToolbarCreateNew(wp, lp);
-    if (lres == 0) {
-        return 0;
-    }
-
-    auto pUserToolbar = reinterpret_cast<CMFCToolBar*>(lres);
-    ASSERT_VALID(pUserToolbar);
-
-    CString strCustomize;
-    auto bNameValid = strCustomize.LoadString(IDS_TOOLBAR_CUSTOMIZE);
-    ASSERT(bNameValid);
-
-    pUserToolbar->EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, strCustomize);
-    return lres;
-}
-
-void CMainFrame::RecalcLayout(BOOL bNotify)
-{
-    ResizeFrame();
-    CFrameWndEx::RecalcLayout(bNotify);
-}
-
-void CMainFrame::ResizeFrame()
-{
-    //RepositionBars(0, 0xffff, AFX_IDW_PANE_FIRST);
-
-    //CRect rc;
-    //GetClientRect(rc);
-
-    //// make room for the menu bar
-    //CRect rcMenu;
-    //if (IsWindow(m_wndMenuBar)) {
-    //    m_wndMenuBar.GetWindowRect(rcMenu);
-    //}
-
-    //// make room for the toolbar
-    //CRect rcToolbar;
-    //if (IsWindow(m_wndToolBar)) {
-    //    m_wndToolBar.GetWindowRect(rcToolbar);
-    //}
-
-    //// make room for the settings pane
-    //CRect rcPane;
-    //if (IsWindow(m_wndSettingsPane)) {
-    //    m_wndSettingsPane.GetWindowRect(rcPane);
-    //}
-
-    //// make room for the status bar
-    //CRect rcStatus;
-    //if (IsWindow(m_wndStatusBar)) {
-    //    m_wndStatusBar.GetWindowRect(rcStatus);
-    //}
-
-    //if (IsWindow(m_wndMenuBar) && !m_wndMenuBar.IsFloating()
-    //    && m_wndMenuBar.IsWindowVisible()) {
-    //    if (m_wndMenuBar.GetPaneStyle() & CBRS_ORIENT_HORZ)
-    //        rc.bottom += rcMenu.Height();
-    //    else if (m_wndMenuBar.GetPaneStyle() & CBRS_ORIENT_VERT)
-    //        rc.right += rcMenu.Width();
-    //}
-
-    //if (IsWindow(m_wndToolBar) && !m_wndToolBar.IsFloating() &&
-    //    m_wndToolBar.IsWindowVisible()) {
-    //    if (m_wndToolBar.GetPaneStyle() & CBRS_ORIENT_HORZ)
-    //        rc.bottom += rcToolbar.Height();
-    //    else if (m_wndToolBar.GetPaneStyle() & CBRS_ORIENT_VERT)
-    //        rc.right += rcToolbar.Width();
-    //}
-
-    //if (IsWindow(m_wndSettingsPane) && !m_wndSettingsPane.IsFloating()
-    //    && m_wndSettingsPane.IsWindowVisible()) {
-    //    if (m_wndSettingsPane.GetPaneStyle() & CBRS_ORIENT_HORZ)
-    //        rc.bottom += rcPane.Height();
-    //    else if (m_wndSettingsPane.GetPaneStyle() & CBRS_ORIENT_VERT)
-    //        rc.right += rcPane.Width();
-    //}
-
-    //if (IsWindow(m_wndStatusBar) && !m_wndStatusBar.IsWindowVisible()) {
-    //    rc.bottom -= rcStatus.Height();
-    //}
-
-    //auto style = GetStyle();
-    //auto dwExStyle = GetExStyle() | WS_EX_CLIENTEDGE;
-    //AdjustWindowRectEx(&rc, style, TRUE, dwExStyle);
-
-    //SetWindowPos(nullptr, 0, 0, rc.Width(), rc.Height(),
-    //             SWP_NOMOVE | SWP_FRAMECHANGED | SWP_NOZORDER);
-}
-
-void CMainFrame::AdjustClientArea()
-{
-    ResizeFrame();
-    return CFrameWndEx::AdjustClientArea();
-}
-
-void CMainFrame::AdjustDockingLayout(HDWP hdwp)
-{
-    ResizeFrame();
-    return CFrameWndEx::AdjustDockingLayout(hdwp);
-}

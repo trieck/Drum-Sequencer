@@ -32,5 +32,6 @@ private:
     CDC m_memDC;
     CPen m_thinPen, m_thickPen;
     CRgn m_region;
+    std::pair<int, int> m_ts;
     int m_cxGrid, m_cyGrid, m_resolution, m_subdivisions;
 };

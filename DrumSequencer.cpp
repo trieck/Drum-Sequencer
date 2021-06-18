@@ -200,3 +200,27 @@ void CDrumSequencerApp::OnUpdateAddSequence(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(!m_sequencer.IsPlaying());
 }
+
+int GetTextWidth(CWnd* pWnd, LPCTSTR str)
+{
+    ASSERT_VALID(pWnd);
+    ASSERT(IsWindow(*pWnd));
+    ASSERT(str != NULL);
+
+    auto* pDC = pWnd->GetDC();
+    ASSERT_VALID(pDC);
+
+    auto* pFont = pWnd->GetFont();
+    ASSERT_VALID(pFont);
+
+    auto* pOldFont = pDC->SelectObject(pFont);
+
+    SIZE sz;
+    ::GetTextExtentPoint32(*pDC, str, _tcslen(str), &sz);
+
+    pDC->SelectObject(pOldFont);
+
+    pWnd->ReleaseDC(pDC);
+
+    return sz.cx;
+}

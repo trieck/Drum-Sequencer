@@ -8,10 +8,6 @@
 
 #include "sequencer.h"
 
-// CDrumSequencerApp:
-// See DrumSequencer.cpp for the implementation of this class
-//
-
 class CDrumSequencerApp : public CWinAppEx
 {
 public:
@@ -50,3 +46,5 @@ public:
 };
 
 extern CDrumSequencerApp theApp;
+
+int GetTextWidth(CWnd* pWnd, LPCTSTR str);

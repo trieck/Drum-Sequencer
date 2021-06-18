@@ -32,11 +32,6 @@ protected: // control bar embedded members
 
     // Generated message map functions
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg LRESULT OnToolbarCreateNew(WPARAM wp, LPARAM lp);
+
 DECLARE_MESSAGE_MAP()
-public:
-    void RecalcLayout(BOOL bNotify = TRUE) override;
-    void ResizeFrame();
-    void AdjustClientArea() override;
-    void AdjustDockingLayout(HDWP hdwp = NULL) override;
 };

@@ -73,6 +73,8 @@ BEGIN_MESSAGE_MAP(CDrumSequencerDoc, CDocument)
         ON_COMMAND(ID_REENCODE_FRONT, &CDrumSequencerDoc::OnReencodeFront)
         ON_COMMAND(ID_REENCODE_BACK, &CDrumSequencerDoc::OnReencodeBack)
         ON_COMMAND(ID_SEQUENCER_ADD_SEQUENCE, &CDrumSequencerDoc::OnAddSequence)
+        ON_UPDATE_COMMAND_UI(IDS_SEQUENCE, &CDrumSequencerDoc::OnUpdateSequence)
+
 END_MESSAGE_MAP()
 
 void CDrumSequencerDoc::OnSequencerPlay()
@@ -83,6 +85,28 @@ void CDrumSequencerDoc::OnSequencerPlay()
 void CDrumSequencerDoc::OnUpdateFileSave(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(IsModified());
+}
+
+void CDrumSequencerDoc::OnUpdateSequence(CCmdUI* pCmdUI)
+{
+    CString str;
+    if (m_sequence.subdivisions() > 0) {
+        auto ts = m_sequence.timeSig();
+        str.Format(_T("%d bar(s) of %d/%d; Resolution: 1/%d"), 
+            m_sequence.bars(), ts.first, ts.second, m_sequence.resolution());
+        pCmdUI->Enable(TRUE);
+    } else {
+        str.Format(_T("Sequence Length"));
+        pCmdUI->Enable(FALSE);
+    }
+
+    pCmdUI->SetText(str);
+
+    auto* pBar = dynamic_cast<CMFCStatusBar*>(pCmdUI->m_pOther);
+    ASSERT_VALID(pBar);
+
+    auto width = GetTextWidth(pBar, str);
+    pBar->SetPaneWidth(1, width);
 }
 
 void CDrumSequencerDoc::OnTogglePlay()
