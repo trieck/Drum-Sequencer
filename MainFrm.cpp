@@ -65,8 +65,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     DockPane(&m_wndToolBar);
     DockPane(&m_wndSettingsPane);
 
-    EnableLoadDockState(FALSE);
-
     return 0;
 }
 
