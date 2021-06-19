@@ -47,7 +47,7 @@ BOOL CDrumSequencerView::PreCreateWindow(CREATESTRUCT& cs)
 
 void CDrumSequencerView::OnDraw(CDC* pDC)
 {
-    CDrumSequencerDoc* pDoc = GetDocument();
+    auto* pDoc = GetDocument();
     ASSERT_VALID(pDoc);
     if (!pDoc)
         return;
@@ -125,19 +125,19 @@ void CDrumSequencerView::DrawInstruments(CDC* pDC)
 void CDrumSequencerView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     if (pHint != nullptr) {
+        CClientDC dc(this);
+
         auto* pSeq = dynamic_cast<Sequence*>(pHint);
         ASSERT_VALID(pSeq);
 
         short x = LOWORD(lHint), y = HIWORD(lHint);
-
-        CClientDC dc(this);
-        if (m_grid.Create(&dc, *pSeq)) {    // new grid
-            SetScrollSizes(MM_TEXT, m_grid.GetBoundingSize());
-            Invalidate();
-        } else if (x >= 0 && y >= 0) {
+        if (x >= 0 && y >= 0) { // beat update
             CRect rc;
             m_grid.GetBeatRect(x, y, rc);
             InvalidateRect(rc);
+        } else if (m_grid.Create(&dc, *pSeq)) { // new grid created
+            SetScrollSizes(MM_TEXT, m_grid.GetBoundingSize());
+            Invalidate();
         } else {
             Invalidate();
         }

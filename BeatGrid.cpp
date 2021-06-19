@@ -25,10 +25,6 @@ BeatGrid::BeatGrid() : m_cxGrid(0), m_cyGrid(0), m_resolution(0), m_subdivisions
     m_thickPen.CreatePen(PS_SOLID, 2, COLOR_BAR);
 }
 
-BeatGrid::~BeatGrid()
-{
-}
-
 BOOL BeatGrid::Create(CDC* pDC, const Sequence& sequence)
 {
     ASSERT_VALID(pDC);
@@ -65,7 +61,7 @@ void BeatGrid::Draw(CDC* pDC)
 
         auto* pOldBitmap = m_memDC.SelectObject(&m_bitmap);
 
-        CRect aRect(rc);
+        auto aRect(rc);
         aRect.OffsetRect(-CX_OFFSET, -CY_OFFSET);
 
         pDC->BitBlt(rc.left, rc.top, rc.Width(), rc.Height(), &m_memDC,
@@ -126,7 +122,7 @@ void BeatGrid::PaintBitmap()
             m_memDC.SelectObject(&m_thinPen);
         }
         auto ptEnd = CPoint(ptStart.x, rcBoard.bottom - 1);
-        m_memDC.LineTo(std::move(ptEnd));
+        m_memDC.LineTo(ptEnd);
         m_memDC.MoveTo(ptStart.x += cx, ptStart.y);
     }
 
@@ -138,7 +134,7 @@ void BeatGrid::PaintBitmap()
 
     while (ptStart.y < rcBoard.bottom) {
         auto ptEnd = CPoint(rcBoard.right - 1, ptStart.y);
-        m_memDC.LineTo(std::move(ptEnd));
+        m_memDC.LineTo(ptEnd);
         m_memDC.MoveTo(ptStart.x, ptStart.y += cy);
     }
 

@@ -26,7 +26,7 @@ BEGIN_MESSAGE_MAP(CDrumSequencerApp, CWinAppEx)
         ON_COMMAND(ID_SEQUENCER_STOP, &CDrumSequencerApp::OnSequencerStop)
         ON_UPDATE_COMMAND_UI(ID_SEQUENCER_PLAY, &CDrumSequencerApp::OnUpdateSequencerPlay)
         ON_UPDATE_COMMAND_UI(ID_SEQUENCER_STOP, &CDrumSequencerApp::OnUpdateSequencerStop)
-        ON_UPDATE_COMMAND_UI(ID_SEQUENCER_ADD_SEQUENCE, &CDrumSequencerApp::OnUpdateAddSequence)
+        ON_UPDATE_COMMAND_UI(ID_FILE_NEW, &CDrumSequencerApp::OnUpdateAddSequence)
 END_MESSAGE_MAP()
 
 static auto constexpr DEFAULT_TEMPO = 120;
@@ -216,7 +216,7 @@ int GetTextWidth(CWnd* pWnd, LPCTSTR str)
     auto* pOldFont = pDC->SelectObject(pFont);
 
     SIZE sz;
-    ::GetTextExtentPoint32(*pDC, str, _tcslen(str), &sz);
+    GetTextExtentPoint32(*pDC, str, static_cast<int>(_tcslen(str)), &sz);
 
     pDC->SelectObject(pOldFont);
 

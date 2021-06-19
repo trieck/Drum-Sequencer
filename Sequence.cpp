@@ -5,13 +5,6 @@ IMPLEMENT_SERIAL(Sequence, CObject, VERSIONABLE_SCHEMA)
 
 ANON_BEGIN
 
-// sequence file marker
-constexpr BYTE SEQ_MARKER[3] = {
-    'S',
-    'E',
-    'Q'
-};
-
 // MIDI instruments
 constexpr BYTE INSTRUMENTS[Sequence::NINSTRUMENTS] = {
     42, // closed hi-hat
@@ -34,14 +27,16 @@ Sequence::Sequence() : m_bars(0), m_tsTop(0), m_tsBottom(0), m_resolution(0)
 
 void Sequence::toggleSub(const CPoint& pt)
 {
-    ASSERT(!m_beats.empty());
+    ASSERT(!m_beats.IsEmpty());
 
-    const auto x = pt.x % subdivisions();
-    const auto y = pt.y % NINSTRUMENTS;
+    const auto nsub = subdivisions();
+    if (nsub > 0) {
+        const auto x = pt.x % nsub;
+        const auto y = pt.y % NINSTRUMENTS;
+        const auto index = y * nsub + x;
 
-    auto index = y * subdivisions() + x;
-
-    m_beats[index] = !m_beats[index];
+        m_beats[index] = !m_beats[index];
+    }
 }
 
 void Sequence::create(int nbars, int tsTop, int tsBottom, int resolution)
@@ -53,16 +48,21 @@ void Sequence::create(int nbars, int tsTop, int tsBottom, int resolution)
 
     auto size = NINSTRUMENTS * subdivisions();
 
-    m_beats.clear();
-    m_beats.resize(size);
+    m_beats.RemoveAll();
+    m_beats.SetSize(size);
 }
 
 bool Sequence::beat(int sub, int instrument) const
 {
-    sub = sub % subdivisions();
-    instrument = instrument % NINSTRUMENTS;
+    auto ndivs = subdivisions();
+    if (ndivs == 0) {
+        return false;
+    }
 
-    auto index = instrument * subdivisions() + sub;
+    sub %= ndivs;
+    instrument %= NINSTRUMENTS;
+
+    auto index = instrument * ndivs + sub;
 
     return m_beats[index];
 }
@@ -95,6 +95,7 @@ int Sequence::subdivisions() const
     if (m_tsBottom == 0) {
         return 0;
     }
+
     return m_bars * m_tsTop * (m_resolution / m_tsBottom);
 }
 
@@ -106,31 +107,24 @@ std::pair<int, int> Sequence::timeSig() const
 void Sequence::clear()
 {
     m_bars = m_tsTop = m_tsBottom = m_resolution = 0;
-    m_beats.clear();
+    m_beats.RemoveAll();
 }
 
 void Sequence::Serialize(CArchive& ar)
 {
-    // FIXME
-    AfxThrowNotSupportedException();
-
-    BYTE buffer[3];
+    ar.SerializeClass(RUNTIME_CLASS(Sequence));
 
     if (ar.IsStoring()) {
-        ar << SEQ_MARKER[0]; // 'S'
-        ar << SEQ_MARKER[1]; // 'E'
-        ar << SEQ_MARKER[2]; // 'Q'
-
-        ar.Write(&m_beats, sizeof(m_beats));
+        ar << m_bars;
+        ar << m_tsTop;
+        ar << m_tsBottom;
+        ar << m_resolution;
     } else {
-        // Is this a valid sequence archive
-        ar.Read(buffer, 3);
-        if (memcmp(buffer, SEQ_MARKER, 3) != 0)
-            AfxThrowArchiveException(CArchiveException::badSchema);
-
-        const auto nRead = ar.Read(&m_beats, sizeof(m_beats));
-        if (nRead != sizeof(m_beats)) {
-            AfxThrowArchiveException(CArchiveException::endOfFile);
-        }
+        ar >> m_bars;
+        ar >> m_tsTop;
+        ar >> m_tsBottom;
+        ar >> m_resolution;
     }
+
+    m_beats.Serialize(ar);
 }

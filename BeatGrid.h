@@ -6,7 +6,6 @@ class BeatGrid
 {
 public:
     BeatGrid();
-    ~BeatGrid();
 
     BOOL PointOnGrid(const CPoint& pt) const;
     CPoint GetSubdivision(const CPoint& pt) const;
@@ -32,6 +31,6 @@ private:
     CDC m_memDC;
     CPen m_thinPen, m_thickPen;
     CRgn m_region;
-    std::pair<int, int> m_ts;
+    std::pair<int, int> m_ts{};
     int m_cxGrid, m_cyGrid, m_resolution, m_subdivisions;
 };

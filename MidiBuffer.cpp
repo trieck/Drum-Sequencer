@@ -48,7 +48,7 @@ MidiBuffer& MidiBuffer::operator=(MidiBuffer&& rhs) noexcept
 void MidiBuffer::Encode(const Sequence& seq)
 {
     // Determine the size of the buffer needed
-    const auto size = (Sequence::NINSTRUMENTS * seq.subdivisions()) /* notes */
+    const UINT size = (Sequence::NINSTRUMENTS * seq.subdivisions()) /* notes */
         * sizeof(MIDISHORTEVENT);
 
     if (size > m_header.dwBufferLength) {

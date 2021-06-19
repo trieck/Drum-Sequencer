@@ -22,7 +22,7 @@ public:
    
 private:
     int m_bars, m_tsTop, m_tsBottom, m_resolution;
-    std::vector<bool> m_beats;
+    CArray<bool> m_beats;
 
 DECLARE_SERIAL(Sequence)
     void Serialize(CArchive& ar) override;

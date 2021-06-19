@@ -65,5 +65,10 @@ void AddSequenceDlg::OnOK()
     m_nTsBottom = 1 << (m_tsBottom.GetCurSel() + 1);
     m_nResolution = 1 << m_resolution.GetCurSel();
 
+    if (m_nResolution < m_nTsBottom) {
+        AfxMessageBox(IDS_INVALIDSEQUENCE);
+        return;
+    }
+
     EndDialog(IDOK);
 }

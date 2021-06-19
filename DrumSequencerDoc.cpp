@@ -4,20 +4,13 @@
 #include "stdafx.h"
 #include "DrumSequencer.h"
 #include "DrumSequencerDoc.h"
-#include "resource.h"
+#include "AddSequenceDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-#include "AddSequenceDlg.h"
-
-// CDrumSequencerDoc
 
 IMPLEMENT_DYNCREATE(CDrumSequencerDoc, CDocument)
-
-CDrumSequencerDoc::CDrumSequencerDoc()
-{
-}
 
 BOOL CDrumSequencerDoc::OnNewDocument()
 {
@@ -26,17 +19,18 @@ BOOL CDrumSequencerDoc::OnNewDocument()
 
     theApp.Stop();
 
+    UpdateAllViews(nullptr, MAKELONG(-1, -1), &m_sequence);
+
     return TRUE;
 }
-
-// CDrumSequencerDoc serialization
 
 void CDrumSequencerDoc::Serialize(CArchive& ar)
 {
     m_sequence.Serialize(ar);
+    if (ar.IsLoading()) {
+        UpdateAllViews(nullptr, MAKELONG(-1, -1), &m_sequence);
+    }
 }
-
-// CDrumSequencerDoc diagnostics
 
 #ifdef _DEBUG
 void CDrumSequencerDoc::AssertValid() const
@@ -50,9 +44,6 @@ void CDrumSequencerDoc::Dump(CDumpContext& dc) const
 }
 #endif //_DEBUG
 
-
-// CDrumSequencerDoc commands
-
 void CDrumSequencerDoc::ToggleSub(const CPoint& pt)
 {
     m_sequence.toggleSub(pt);
@@ -63,7 +54,6 @@ void CDrumSequencerDoc::ToggleSub(const CPoint& pt)
 void CDrumSequencerDoc::DeleteContents()
 {
     m_sequence.clear();
-    UpdateAllViews(nullptr, MAKELONG(-1, -1), &m_sequence);
 }
 
 BEGIN_MESSAGE_MAP(CDrumSequencerDoc, CDocument)
@@ -72,9 +62,8 @@ BEGIN_MESSAGE_MAP(CDrumSequencerDoc, CDocument)
         ON_COMMAND(ID_TOGGLE_PLAY, &CDrumSequencerDoc::OnTogglePlay)
         ON_COMMAND(ID_REENCODE_FRONT, &CDrumSequencerDoc::OnReencodeFront)
         ON_COMMAND(ID_REENCODE_BACK, &CDrumSequencerDoc::OnReencodeBack)
-        ON_COMMAND(ID_SEQUENCER_ADD_SEQUENCE, &CDrumSequencerDoc::OnAddSequence)
+        ON_COMMAND(ID_FILE_NEW, &CDrumSequencerDoc::OnAddSequence)
         ON_UPDATE_COMMAND_UI(IDS_SEQUENCE, &CDrumSequencerDoc::OnUpdateSequence)
-
 END_MESSAGE_MAP()
 
 void CDrumSequencerDoc::OnSequencerPlay()
@@ -132,6 +121,8 @@ void CDrumSequencerDoc::OnAddSequence()
 {
     AddSequenceDlg dlg;
     if (dlg.DoModal() == IDOK) {
+        theApp.OnCmdMsg(ID_FILE_NEW, 0, nullptr, nullptr);
+
         auto size = dlg.sequenceSize();
         auto tsTop = dlg.timeSigTop();
         auto tsBottom = dlg.timeSigBottom();
@@ -142,3 +133,4 @@ void CDrumSequencerDoc::OnAddSequence()
         UpdateAllViews(nullptr, MAKELONG(-1,-1), &m_sequence);
     }
 }
+

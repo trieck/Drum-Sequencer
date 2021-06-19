@@ -5,7 +5,7 @@
 class CDrumSequencerDoc : public CDocument
 {
 protected: // create from serialization only
-    CDrumSequencerDoc();
+    CDrumSequencerDoc()=default;
 DECLARE_DYNCREATE(CDrumSequencerDoc)
     BOOL OnNewDocument() override;
     void Serialize(CArchive& ar) override;
@@ -34,4 +34,6 @@ DECLARE_MESSAGE_MAP()
     afx_msg void OnReencodeFront();
     afx_msg void OnReencodeBack();
     afx_msg void OnAddSequence();
+    /*virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
+    virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);*/
 };
